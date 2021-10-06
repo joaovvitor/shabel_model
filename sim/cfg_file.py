@@ -27,7 +27,7 @@ cfg.startStimTime = 0 # TEMPORARY - IMPROVE THIS CODE
 
 cfg.duration = 2*1e3			## Duration of the sim, in ms -- value from M1 cfg.py 
 cfg.dt = 0.025                  ## Internal Integration Time Step -- value from M1 cfg.py 
-cfg.verbose = 0                	## Show detailed messages
+cfg.verbose = True              ## Show detailed messages
 cfg.hParams = {'celsius': 34, 'v_init': -70}  
 cfg.createNEURONObj = True
 cfg.createPyStruct = True  
