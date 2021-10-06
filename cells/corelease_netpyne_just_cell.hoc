@@ -1,0 +1,570 @@
+i_g_start = 0.002
+e_g_start = 0.004  //(4 pA/mV) conductance
+
+num_dend = 5
+num_spine_per_dend = 4
+//rogue_position = num_spine_per_dend  // if equals num_spine_per_dend then at middle of dendrite
+
+load_file("stdlib.hoc")
+
+begintemplate CoCell_Cell
+public is_art
+public init, topol, basic_shape, subsets, geom, biophys, geom_nseg, biophys_inhomo
+public synlist, x, y, z, position, connect2target
+
+public soma, dend0, dend1, dend2, dend3, dend4, neck0, neck1, neck2, neck3, neck4, spine0, spine1, spine2, spine3, spine4
+public ah, is, axon
+public all, dend_all, spines_all, necks_all
+
+objref synlist
+
+proc init() {
+  topol()
+  subsets()
+  geom()
+  biophys()
+  geom_nseg()
+  synlist = new List()
+  synapses()
+  x = y = z = 0 // only change via position
+}
+num_dend = 5
+num_spine_per_dend = 4
+
+create soma
+
+    create dend0[num_spine_per_dend], dend1[num_spine_per_dend], neck0[num_spine_per_dend], neck1[num_spine_per_dend], spine0[num_spine_per_dend], spine1[num_spine_per_dend]
+        create dend2[num_spine_per_dend], neck2[num_spine_per_dend], spine2[num_spine_per_dend]
+              create dend3[num_spine_per_dend], neck3[num_spine_per_dend], spine3[num_spine_per_dend]
+                   create dend4[num_spine_per_dend], neck4[num_spine_per_dend], spine4[num_spine_per_dend]
+
+
+create ah, is, axon
+
+
+proc topol() { local i
+num_dend = 5
+num_spine_per_dend = 4
+
+
+if (num_dend > 1) {
+    connect dend0[0](0), soma(0)
+    connect dend1[0](0), soma(0)
+    for i = 1, num_spine_per_dend-1 connect dend0[i](0), dend0[i-1](1)
+    for i = 1, num_spine_per_dend-1 connect dend1[i](0), dend1[i-1](1)
+    for i = 0, num_spine_per_dend-1  connect neck0[i](0), dend0[i](1)
+    for i = 0, num_spine_per_dend-1  connect neck1[i](0), dend1[i](1)
+    for i = 0, num_spine_per_dend-1  connect spine0[i](0), neck0[i](1)
+    for i = 0, num_spine_per_dend-1  connect spine1[i](0), neck1[i](1)
+    if (num_dend > 2) {
+        connect dend2[0](0), soma(0)       
+        for i = 1, num_spine_per_dend-1 connect dend2[i](0), dend2[i-1](1)
+        for i = 0, num_spine_per_dend-1  connect neck2[i](0), dend2[i](1)
+        for i = 0, num_spine_per_dend-1  connect spine2[i](0), neck2[i](1)
+        if (num_dend > 3) {
+            connect dend3[0](0), soma(0)       
+            for i = 1, num_spine_per_dend-1 connect dend3[i](0), dend3[i-1](1)
+            for i = 0, num_spine_per_dend-1  connect neck3[i](0), dend3[i](1)
+            for i = 0, num_spine_per_dend-1  connect spine3[i](0), neck3[i](1)
+           if (num_dend > 4) {
+                connect dend4[0](0), soma(0)       
+                for i = 1, num_spine_per_dend-1 connect dend4[i](0), dend4[i-1](1)
+                for i = 0, num_spine_per_dend-1  connect neck4[i](0), dend4[i](1)
+                for i = 0, num_spine_per_dend-1  connect spine4[i](0), neck4[i](1)
+
+}
+}
+}
+}
+
+  connect ah(0), soma(1)
+  connect is(0), ah(1)
+  connect axon(0), is(1)
+  basic_shape()
+}
+
+
+
+double dend_x_inc[num_dend]
+double dend_y_inc[num_dend]
+
+double neck_x_inc[num_dend]
+double neck_y_inc[num_dend]
+
+
+proc basic_shape() {
+num_dend = 5
+num_spine_per_dend = 4
+
+
+deg_per_dend = 180/(num_dend+1)
+pic_scale = 10
+
+// storing values for incremental placement of dendrite segments and corresponding necks
+
+for n = 0, num_dend-1 {
+       deg = (deg_per_dend * (n+1)) 
+       //print deg
+     if (deg == 90 ) {  // trying to avoid dividing by zero later (cos 90, 270 = 0)
+        dend_y_inc[n] = 1*pic_scale
+        dend_x_inc[n] = 0
+        neck_x_inc[n] = 1*pic_scale
+        neck_y_inc[n] = 0
+        continue
+      }
+     if (deg == 270 ) {  // trying to avoid dividing by zero later (cos 90, 270 = 0)
+        dend_y_inc[n] = -1*pic_scale
+        dend_x_inc[n] = 0
+        neck_x_inc[n] = -1*pic_scale
+        neck_y_inc[n] = 0
+        continue
+      }
+     if (deg == 180) {  // trying to avoid dividing by zero later (cos 90, 270 = 0)
+        dend_y_inc[n] = 0
+        dend_x_inc[n] = -1*pic_scale
+        neck_x_inc[n] = 0
+        neck_y_inc[n] = 1*pic_scale
+        continue
+      }
+    if (deg == 360) {  // trying to avoid dividing by zero later (cos 90, 270 = 0)
+        dend_y_inc[n] = 0
+        dend_x_inc[n] = 1*pic_scale
+        neck_x_inc[n] = 0
+        neck_y_inc[n] = -1*pic_scale
+        continue
+      }
+    if (deg == 0) {  // trying to avoid dividing by zero later (cos 90, 270 = 0)
+        dend_y_inc[n] = 0
+        dend_x_inc[n] = 1*pic_scale
+        neck_x_inc[n] = 0
+        neck_y_inc[n] = -1*pic_scale
+        continue
+      }
+     y_x = abs(sin(deg)/cos(deg))  // same as tangent; for incrementing y relative to x
+     print deg
+     print y_x
+
+     if (deg >= 0 && deg < 90) {
+        dend_x_inc[n] = 1*pic_scale
+        dend_y_inc[n] = y_x*pic_scale
+        neck_x_inc[n] = 1*pic_scale
+        neck_y_inc[n] = -(1/y_x)*pic_scale
+       }
+     if (deg > 90 && deg <= 180) {
+       dend_x_inc[n] = -1*pic_scale
+       dend_y_inc[n] = y_x*pic_scale
+        neck_x_inc[n] = 1*pic_scale
+        neck_y_inc[n] = (1/y_x)*pic_scale
+       }
+     if (deg > 180 && deg < 270) {
+        dend_x_inc[n] = -1*pic_scale
+        dend_y_inc[n] = -y_x*pic_scale
+        neck_x_inc[n] = -1*pic_scale
+        neck_y_inc[n] = (1/y_x)*pic_scale
+       }
+     if (deg > 270 && deg <= 360)  {
+        dend_x_inc[n] = 1*pic_scale
+        dend_y_inc[n] = -y_x*pic_scale
+        neck_x_inc[n] = -1*pic_scale
+        neck_y_inc[n] = -(1/y_x)*pic_scale
+
+      }
+ 
+   }
+
+
+  soma {pt3dclear() pt3dadd(0, 0, 0, 1) pt3dadd(15, 0, 0, 1)}
+
+  if (num_dend > 1) {
+    dend_x = 0
+    dend_y = 0
+    dend0 {pt3dclear() pt3dadd(dend_x,dend_y,0,1) pt3dadd(dend_x+dend_x_inc[0],dend_y + dend_y_inc[0],0,1)}
+    neck0[0] {pt3dclear() pt3dadd(dend_x+dend_x_inc[0],dend_y + dend_y_inc[0],0,1) pt3dadd(dend_x+dend_x_inc[0] + neck_x_inc[0],dend_y + dend_y_inc[0] + neck_y_inc[0],0,1)}
+    spine0[0] {pt3dclear() pt3dadd(dend_x+dend_x_inc[0] + neck_x_inc[0],dend_y + dend_y_inc[0] + neck_y_inc[0],0,1) pt3dadd(dend_x+dend_x_inc[0] + 2*neck_x_inc[0],dend_y + dend_y_inc[0] + 2*neck_y_inc[0],0,1)}
+    dend_x = dend_x + dend_x_inc[0]
+    dend_y = dend_y + dend_y_inc[0]
+    for i = 1, num_spine_per_dend-1 {
+               dend0[i] {pt3dclear() pt3dadd(dend_x,dend_y,0,1) pt3dadd(dend_x+dend_x_inc[0],dend_y + dend_y_inc[0],0,1)}
+               neck0[i] {pt3dclear() pt3dadd(dend_x+dend_x_inc[0],dend_y + dend_y_inc[0],0,1) pt3dadd(dend_x+dend_x_inc[0] + neck_x_inc[0],dend_y + dend_y_inc[0] + neck_y_inc[0],0,1)}
+               spine0[i] {pt3dclear() pt3dadd(dend_x+dend_x_inc[0] + neck_x_inc[0],dend_y + dend_y_inc[0] + neck_y_inc[0],0,1) pt3dadd(dend_x+dend_x_inc[0] + 2*neck_x_inc[0],dend_y + dend_y_inc[0] + 2*neck_y_inc[0],0,1)}
+               dend_x = dend_x + dend_x_inc[0]
+               dend_y = dend_y + dend_y_inc[0]
+
+    }
+
+   dend_x = 0
+    dend_y = 0
+    dend1 {pt3dclear() pt3dadd(dend_x,dend_y,0,1) pt3dadd(dend_x+dend_x_inc[1],dend_y + dend_y_inc[1],0,1)}
+    neck1[0] {pt3dclear() pt3dadd(dend_x+dend_x_inc[1],dend_y + dend_y_inc[1],0,1) pt3dadd(dend_x+dend_x_inc[1] + neck_x_inc[1],dend_y + dend_y_inc[1] + neck_y_inc[1],0,1)}
+    spine1[0] {pt3dclear() pt3dadd(dend_x+dend_x_inc[1] + neck_x_inc[1],dend_y + dend_y_inc[1] + neck_y_inc[1],0,1) pt3dadd(dend_x+dend_x_inc[1] + 2*neck_x_inc[1],dend_y + dend_y_inc[1] + 2*neck_y_inc[1],0,1)}
+
+    dend_x = dend_x + dend_x_inc[1]
+    dend_y = dend_y + dend_y_inc[1]
+    for i = 1 , num_spine_per_dend-1 {
+               dend1[i] {pt3dclear() pt3dadd(dend_x,dend_y,0,1) pt3dadd(dend_x+dend_x_inc[1],dend_y + dend_y_inc[1],0,1)}
+               neck1[i] {pt3dclear() pt3dadd(dend_x+dend_x_inc[1],dend_y + dend_y_inc[1],0,1) pt3dadd(dend_x+dend_x_inc[1] + neck_x_inc[1],dend_y + dend_y_inc[1] + neck_y_inc[1],0,1)}
+               spine1[i] {pt3dclear() pt3dadd(dend_x+dend_x_inc[1] + neck_x_inc[1],dend_y + dend_y_inc[1] + neck_y_inc[1],0,1) pt3dadd(dend_x+dend_x_inc[1] + 2*neck_x_inc[1],dend_y + dend_y_inc[1] + 2*neck_y_inc[1],0,1)}
+               dend_x = dend_x + dend_x_inc[1]
+               dend_y = dend_y + dend_y_inc[1]
+
+    }
+
+   }
+
+  if (num_dend > 2) {
+    temp_dend = 2
+    dend_x = 0
+    dend_y = 0
+    dend2 {pt3dclear() pt3dadd(dend_x,dend_y,0,1) pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1)}
+    neck2[0] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1)}
+    spine2[0] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + 2*neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + 2*neck_y_inc[temp_dend],0,1)}
+    dend_x = dend_x + dend_x_inc[temp_dend]
+    dend_y = dend_y + dend_y_inc[temp_dend]
+    for i = 1, num_spine_per_dend-1 {
+               dend2[i] {pt3dclear() pt3dadd(dend_x,dend_y,0,1) pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1)}
+               neck2[i] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1)}
+               spine2[i] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + 2*neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + 2*neck_y_inc[temp_dend],0,1)}
+               dend_x = dend_x + dend_x_inc[temp_dend]
+               dend_y = dend_y + dend_y_inc[temp_dend]
+
+    }
+
+}
+
+ if (num_dend > 3) {
+    temp_dend = 3
+    dend_x = 0
+    dend_y = 0
+    dend3 {pt3dclear() pt3dadd(dend_x,dend_y,0,1) pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1)}
+    neck3[0] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1)}
+    spine3[0] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + 2*neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + 2*neck_y_inc[temp_dend],0,1)}
+    dend_x = dend_x + dend_x_inc[temp_dend]
+    dend_y = dend_y + dend_y_inc[temp_dend]
+    for i = 1, num_spine_per_dend-1 {
+               dend3[i] {pt3dclear() pt3dadd(dend_x,dend_y,0,1) pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1)}
+               neck3[i] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1)}
+               spine3[i] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + 2*neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + 2*neck_y_inc[temp_dend],0,1)}
+               dend_x = dend_x + dend_x_inc[temp_dend]
+               dend_y = dend_y + dend_y_inc[temp_dend]
+
+    }
+
+}
+
+ if (num_dend > 4) {
+    temp_dend = 4
+    dend_x = 0
+    dend_y = 0
+    dend4 {pt3dclear() pt3dadd(dend_x,dend_y,0,1) pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1)}
+    neck4[0] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1)}
+    spine4[0] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + 2*neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + 2*neck_y_inc[temp_dend],0,1)}
+    dend_x = dend_x + dend_x_inc[temp_dend]
+    dend_y = dend_y + dend_y_inc[temp_dend]
+    for i = 1, num_spine_per_dend-1 {
+               dend4[i] {pt3dclear() pt3dadd(dend_x,dend_y,0,1) pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1)}
+               neck4[i] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1)}
+               spine4[i] {pt3dclear() pt3dadd(dend_x+dend_x_inc[temp_dend] + neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + neck_y_inc[temp_dend],0,1) pt3dadd(dend_x+dend_x_inc[temp_dend] + 2*neck_x_inc[temp_dend],dend_y + dend_y_inc[temp_dend] + 2*neck_y_inc[temp_dend],0,1)}
+               dend_x = dend_x + dend_x_inc[temp_dend]
+               dend_y = dend_y + dend_y_inc[temp_dend]
+
+    }
+
+}
+
+
+
+
+ 
+  ah {pt3dclear() pt3dadd(15, 0, 0, 1) pt3dadd(45, -14, 0, 1)}
+  is {pt3dclear() pt3dadd(45, -14, 0, 1) pt3dadd(75, -29, 0, 1)}
+  axon {pt3dclear() pt3dadd(75, -29, 0, 1) pt3dadd(135, -59, 0, 1)}
+}
+
+objref all, dend_all, spines_all, necks_all
+proc subsets() { local i
+num_dend = 5
+num_spine_per_dend = 4
+
+  objref all, dend_all, spines_all, necks_all
+  all = new SectionList()
+    soma all.append()
+   if (num_dend > 1) {
+    for i=0, num_spine_per_dend -1 dend0[i] all.append()
+    for i=0, num_spine_per_dend -1 dend1[i] all.append()
+    for i=0, num_spine_per_dend -1 neck0[i] all.append()
+    for i=0, num_spine_per_dend -1 neck1[i] all.append()
+    for i=0, num_spine_per_dend -1 spine0[i] all.append()
+    for i=0, num_spine_per_dend -1 spine1[i] all.append()
+    }
+ if (num_dend > 2) { 
+    for i=0, num_spine_per_dend -1 dend2[i] all.append()
+    for i=0, num_spine_per_dend -1 neck2[i] all.append()
+    for i=0, num_spine_per_dend -1 spine2[i] all.append()
+   }
+ if (num_dend > 3) { 
+    for i=0, num_spine_per_dend -1 dend3[i] all.append()
+    for i=0, num_spine_per_dend -1 neck3[i] all.append()
+    for i=0, num_spine_per_dend -1 spine3[i] all.append()
+   }
+ if (num_dend > 4) { 
+    for i=0, num_spine_per_dend -1 dend4[i] all.append()
+    for i=0, num_spine_per_dend -1 neck4[i] all.append()
+    for i=0, num_spine_per_dend -1 spine4[i] all.append()
+   }
+  
+    ah all.append()
+    is all.append()
+    axon all.append()
+
+  dend_all = new SectionList()
+   if (num_dend > 1) {
+    for i=0, num_spine_per_dend -1 dend0[i] dend_all.append()
+    for i=0, num_spine_per_dend -1 dend1[i] dend_all.append()
+   }
+  if (num_dend > 2) {
+    for i=0, num_spine_per_dend -1 dend2[i] dend_all.append()
+   }
+  if (num_dend > 3) {
+    for i=0, num_spine_per_dend -1 dend3[i] dend_all.append()
+   }
+  if (num_dend > 4) {
+    for i=0, num_spine_per_dend -1 dend4[i] dend_all.append()
+   }
+
+  spines_all = new SectionList()
+    if (num_dend > 1) {
+    for i=0, num_spine_per_dend -1 spine0[i] spines_all.append()
+    for i=0, num_spine_per_dend -1 spine1[i] spines_all.append()
+  }
+    if (num_dend > 2) {
+    for i=0, num_spine_per_dend -1 spine2[i] spines_all.append()
+  }
+    if (num_dend > 3) {
+    for i=0, num_spine_per_dend -1 spine3[i] spines_all.append()
+  }
+
+    if (num_dend > 4) {
+    for i=0, num_spine_per_dend -1 spine4[i] spines_all.append()
+  }
+
+  necks_all = new SectionList()
+    if (num_dend > 1) {
+    for i=0, num_spine_per_dend -1 neck0[i] necks_all.append()
+    for i=0, num_spine_per_dend -1 neck1[i] necks_all.append()
+  }
+    if (num_dend > 2) {
+    for i=0, num_spine_per_dend -1 neck2[i] necks_all.append()
+  }
+    if (num_dend > 3) {
+    for i=0, num_spine_per_dend -1 neck3[i] necks_all.append()
+  }
+    if (num_dend > 4) {
+    for i=0, num_spine_per_dend -1 neck4[i] necks_all.append()
+  }
+
+
+}
+proc geom() {
+  forsec all {  }
+  forsec dend_all {  L = 5  diam = 2  }
+  forsec spines_all {  L = 1  diam = 1  }
+  forsec necks_all {  L = 2  diam = 0.2  } // was .5 and .5
+  soma {  L = 25  diam = 25  }
+  ah {  L = 20  diam = 1  }
+  is {  L = 40  diam = 1  }
+  axon {  L = 20  diam = 1  }
+}
+external lambda_f
+proc geom_nseg() {
+  forsec all { nseg = int((L/(0.1*lambda_f(100))+.999)/2)*2 + 1  }
+}
+proc biophys() {
+  forsec all {
+    Ra = 200
+    insert pas
+      g_pas = 0.000075 // S/cm^2; was 0.0002; .000075 = 750 MOhm for 25 um diameter soma; .0001 = 500 MOhm for 25 um diameter soma (but not including surface area of dendrites, which would decrease resistance
+      e_pas = -65
+  }
+  forsec dend_all {
+    cm = 1
+    insert hh
+      gnabar_hh = 3.84 // was 0.12, then 0.48, then .96 
+      gkbar_hh = 1.152 // was 0.036, then 0.144, then .288
+      gl_hh = 0.0003
+      el_hh = -54.3   // was -54.3
+  }
+  forsec spines_all {
+    //insert hh
+     // gnabar_hh = 0.12
+     // gkbar_hh = 0.036
+     // gl_hh = 0.0003
+     // el_hh = -54.3
+    cm = 1
+  }
+  forsec necks_all {
+    cm = 1
+    //insert hh
+    //  gnabar_hh = 0.12
+     // gkbar_hh = 0.036
+     // gl_hh = 0.0003
+     // el_hh = -54.3
+  }
+  soma {
+    cm = 1
+    insert hh
+      gnabar_hh = 3.84 // was 0.12, then 0.48  
+      gkbar_hh = 1.152 // was 0.036, then 0.144
+       gl_hh = 0.0003
+      el_hh = -54.3
+  }
+  ah {
+    cm = 0.5
+    insert hh
+      gnabar_hh = 0.12
+      gkbar_hh = 0.036
+      gl_hh = 0.0003
+      el_hh = -54.3
+  }
+  is {
+    cm = 0.5
+    insert hh
+      gnabar_hh = 0.12 // was 0.12
+      gkbar_hh = 0.036
+      gl_hh = 0.0003
+      el_hh = -54.3
+  }
+  axon {
+    cm = 0.5
+    insert hh
+      gnabar_hh = 0.12
+      gkbar_hh = 0.036
+      gl_hh = 0.0003
+      el_hh = -54.3
+  }
+}
+proc biophys_inhomo(){}
+proc position() { local i
+  soma for i = 0, n3d()-1 {
+    pt3dchange(i, $1-x+x3d(i), $2-y+y3d(i), $3-z+z3d(i), diam3d(i))
+  }
+  x = $1  y = $2  z = $3
+}
+obfunc connect2target() { localobj nc //$o1 target point process, optional $o2 returned NetCon
+  soma nc = new NetCon(&v(1), $o1)
+  nc.threshold = 10
+  if (numarg() == 2) { $o2 = nc } // for backward compatibility
+  return nc
+}
+objref syn_
+proc synapses() {
+num_spine_per_dend = 4
+num_dend =  5
+
+ // spine0 syn_ = new ExpSyn(1)  synlist.append(syn_)
+  //     syn_.tau = 3
+  spine0 syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 2.1
+       syn_.tau2 = 6.2 // was 6.2
+       syn_.e = 0
+  spine0 syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 8
+       syn_.tau2 = 21
+       syn_.e = -65
+
+  for n = 1, num_spine_per_dend -1 {
+     spine0[n] syn_ = new Exp2Syn(1)  synlist.append(syn_)
+        syn_.tau1 = 2.1
+       syn_.tau2 = 6.2
+       syn_.e = 0
+     spine0[n] syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 8
+       syn_.tau2 = 21
+       syn_.e = -65
+  }
+  spine1 syn_ = new Exp2Syn(1)  synlist.append(syn_)
+         syn_.tau1 = 2.1
+       syn_.tau2 = 6.2
+       syn_.e = 0
+  spine1 syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 8
+       syn_.tau2 = 21
+       syn_.e = -65
+  for n = 1, num_spine_per_dend -1 {
+     spine1[n] syn_ = new Exp2Syn(1)  synlist.append(syn_)
+         syn_.tau1 = 2.1
+       syn_.tau2 = 6.2  
+       syn_.e = 0
+     spine1[n] syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 8
+       syn_.tau2 = 21
+       syn_.e = -65
+  }
+
+if (num_dend > 2) {
+ spine2 syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 2.1
+       syn_.tau2 = 6.2
+       syn_.e = 0
+  spine2 syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 8
+       syn_.tau2 = 21
+       syn_.e = -65
+  for n = 1, num_spine_per_dend -1 {
+     spine2[n] syn_ = new Exp2Syn(1)  synlist.append(syn_)
+        syn_.tau1 = 2.1
+       syn_.tau2 = 6.2
+       syn_.e = 0
+     spine2[n] syn_ = new Exp2Syn(1)  synlist.append(syn_)
+        syn_.tau1 = 8
+       syn_.tau2 = 21
+       syn_.e = -65
+  }
+}
+
+if (num_dend > 3) {
+ spine3 syn_ = new Exp2Syn(1)  synlist.append(syn_)
+        syn_.tau1 = 2.1
+       syn_.tau2 = 6.2
+       syn_.e = 0
+  spine3 syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 8
+       syn_.tau2 = 21
+       syn_.e = -65
+  for n = 1, num_spine_per_dend -1 {
+     spine3[n] syn_ = new Exp2Syn(1)  synlist.append(syn_)
+        syn_.tau1 = 2.1
+       syn_.tau2 = 6.2
+       syn_.e = 0
+     spine3[n] syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 8
+       syn_.tau2 = 21
+       syn_.e = -65
+  }
+}
+
+if (num_dend > 4) {
+ spine4 syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 2.1
+       syn_.tau2 = 6.2
+       syn_.e = 0
+  spine4 syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 8
+       syn_.tau2 = 21
+       syn_.e = -65
+  for n = 1, num_spine_per_dend -1 {
+     spine4[n] syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 2.1
+       syn_.tau2 = 6.2
+       syn_.e = 0
+     spine4[n] syn_ = new Exp2Syn(1)  synlist.append(syn_)
+       syn_.tau1 = 8
+       syn_.tau2 = 21
+       syn_.e = -65
+  }
+}
+}
+
+func is_art() { return 0 }
+
+endtemplate CoCell_Cell
+
