@@ -175,7 +175,7 @@ cfg.addNetStim=True
 if cfg.addNetStim:
     
     cfg.numStims    = 200
-    cfg.netWeight   = 0.02
+    cfg.netWeight   = 0.1
     cfg.startStimTime = 250
     cfg.interStimInterval=1000/50
 
