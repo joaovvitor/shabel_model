@@ -180,3 +180,9 @@ b.saveFolder    = b.dataFolder + '/' + simType+'_' +  b.batchLabel
 b.method        = 'grid'
 setRunCfg(b, mpi_type)
 b.run() # run batch
+
+'''
+mpiexec -n 6 nrniv -python -mpi batch.py
+
+sudo git commit -a -m " "; sudo git push; sudo git pull
+'''

@@ -103,6 +103,8 @@ if cfg.savePlots:
                                     'showFig': True, 
                                     'figSize': (40,16)}
 
+    cfg.analysis['plotRaster'] = {'saveFig':True}
+    
     # cfg.analysis['plot2Dnet']   = { 'saveFig': True, 'figSize': (20,15)}   # Plot 2D net cells and connections
 
     # cfg.analysis['plotRaster'] = {'saveFig':True, 'orderInverse': True, 'popRates' : True, 'figSize': (40,30)}#, 'orderBy': 'y'}#, 'dpi':2000}
@@ -121,6 +123,81 @@ if cfg.savePlots:
 cfg.saveCellParams=False
 cfg.changeBaseline = -70 # default
 cfg.numcells = 1
+
+cfg.otherSecsList=[ 'soma',
+                    'ah', 
+                    'is', 
+                    'axon'
+                ]
+
+cfg.dendList=[
+                'dend0_0', 
+                'dend0_1', 
+                'dend0_2', 
+                'dend0_3', 
+                'dend1_0', 
+                'dend1_1', 
+                'dend1_2', 
+                'dend1_3', 
+                'dend2_0', 
+                'dend2_1', 
+                'dend2_2', 
+                'dend2_3', 
+                'dend3_0', 
+                'dend3_1', 
+                'dend3_2', 
+                'dend3_3', 
+                'dend4_0', 
+                'dend4_1', 
+                'dend4_2', 
+                'dend4_3'
+            ]
+
+cfg.neckList=[
+                'neck0_0',
+                'neck0_1',
+                'neck0_2',
+                'neck0_3',
+                'neck1_0',
+                'neck1_1', 
+                'neck1_2', 
+                'neck1_3', 
+                'neck2_0', 
+                'neck2_1', 
+                'neck2_2', 
+                'neck2_3', 
+                'neck3_0', 
+                'neck3_1', 
+                'neck3_2', 
+                'neck3_3', 
+                'neck4_0', 
+                'neck4_1', 
+                'neck4_2', 
+                'neck4_3'
+            ]
+
+cfg.spineList=[
+                'spine0_0', 
+                'spine0_1', 
+                'spine0_2', 
+                'spine0_3', 
+                'spine1_0', 
+                'spine1_1', 
+                'spine1_2', 
+                'spine1_3', 
+                'spine2_0', 
+                'spine2_1', 
+                'spine2_2', 
+                'spine2_3', 
+                'spine3_0', 
+                'spine3_1', 
+                'spine3_2', 
+                'spine3_3', 
+                'spine4_0', 
+                'spine4_1', 
+                'spine4_2', 
+                'spine4_3'
+            ]
 
 #------------------------------------------------------------------------------
 # Synapses
@@ -182,6 +259,7 @@ if cfg.addNetStim:
     cfg.NetStim1    = { 'pop':              'CoCell_pop', 
                         'ynorm':            [0,1], 
                         'sec':              'soma', 
+                        # 'sec':              cfg.spineList, 
                         'loc':              0.5, 
                         'synMech':          ['AMPA','GABAA'], 
                         'synMechWeightFactor': [0.5,0.5],
