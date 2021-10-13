@@ -155,6 +155,51 @@ if cfg.addNetStim:
             'weight': cfg.netWeight if cfg.netWeight is not None else weight,
             'synMechWeightFactor': synMechWeightFactor,
             'delay': delay}
+
+
+if cfg.addManySecs_NetStim:
+    print('\n\n\nAdding NetStims to multiple sections\n\n\n')
+    for key in [k for k in dir(cfg) if k.startswith('ManySecs')]:
+        params = getattr(cfg, key, None)
+        [pop, secList, loc, synMech, synMechWeightFactor, start, interval, noise, number, weight, delay] = \
+        [params[s] for s in ['pop', 'secList', 'loc', 'synMech', 'synMechWeightFactor', 'start', 'interval', 'noise', 'number', 'weight', 'delay']] 
+
+        #cfg.analysis['plotTraces']['include'] = [(pop,0)]
+
+        if synMech == ESynMech:
+            wfrac = cfg.synWeightFractionEE
+        elif synMech == SOMESynMech:
+            wfrac = cfg.synWeightFractionSOME
+        else:
+            wfrac = [1.0]
+
+        # add stim source
+        netParams.stimSourceParams[key] = { 'type':     'NetStim', 
+                                            'start':    cfg.startStimTime       if cfg.startStimTime is not None        else start, 
+                                            'interval': cfg.interStimInterval   if cfg.interStimInterval is not None    else interval, 
+                                            'noise':    noise, 
+                                            'number':   cfg.numStims            if cfg.numStims is not None             else number}
+
+        # netParams.stimSourceParams[key] = {'type': 'NetStim', 'start': start, 'interval': interval, 'noise': noise, 'number': number}
+
+        # connect stim source to target
+        # for i, syn in enumerate(synMech):
+        # print(pop)
+        # print(secList)
+        for sec in secList:
+            print(sec+'\n\n')
+            netParams.stimTargetParams[key+'_'+pop+'_'+sec] =  {
+                'source': key, 
+                'conds': {'pop': pop},
+                'sec': sec, 
+                'loc': loc,
+                'synMech': cfg.synMech if cfg.synMech is not None else synMech,
+                # 'weight': weight,
+                'weight': cfg.netWeight if cfg.netWeight is not None else weight,
+                'synMechWeightFactor': cfg.synMechWF if cfg.synMechWF is not None else synMechWeightFactor,
+                'delay': delay}
+
+
 '''
 #------------------------------------------------------------------------------
 # Current inputs (IClamp)

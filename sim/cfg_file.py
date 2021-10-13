@@ -55,6 +55,8 @@ cfg.allpops = [
 
 cfg.recordTraces = {
                     'V_soma': {'sec':'soma', 'loc':0.5, 'var':'v'},
+                    'V_spine0_0': {'sec':'spine0_0', 'loc':0.5, 'var':'v'},
+                    'V_spine4_2': {'sec':'spine4_2', 'loc':0.5, 'var':'v'},
                     # 'i_soma':{'sec':'soma','loc':0.5,'var':'i_membrane_'},
                     # 'i_pas': {'sec':'soma', 'loc':0.5, 'mech':'pas', 'var':'i'},
                     # 'i_h': {'sec':'soma', 'loc':0.5, 'mech':'ih', 'var':'i'},
@@ -248,27 +250,71 @@ if cfg.addPreIClamp:
 #------------------------------------------------------------------------------
 # NetStim inputs 
 #------------------------------------------------------------------------------
-cfg.addNetStim=True
+
+cfg.addNetStim=False
 if cfg.addNetStim:
     
     cfg.numStims    = 200
-    cfg.netWeight   = 0.1
+    cfg.netWeight   = 0.5
     cfg.startStimTime = 250
     cfg.interStimInterval=1000/50
 
-    cfg.NetStim1    = { 'pop':              'CoCell_pop', 
+    cfg.NetStim0    = { 'pop':              'CoCell_pop', 
                         'ynorm':            [0,1], 
+                        # 'sec':              'soma', 
                         'sec':              'soma', 
-                        # 'sec':              cfg.spineList, 
                         'loc':              0.5, 
-                        'synMech':          ['AMPA','GABAA'], 
-                        'synMechWeightFactor': [0.5,0.5],
+                        'synMech':          ['AMPA'], 
+                        'synMechWeightFactor': [1],
+                        # 'synMech':          ['GABAA'], 
+                        # 'synMechWeightFactor': [1],
+                        # 'synMech':          ['AMPA','GABAA'], 
+                        # 'synMechWeightFactor': [0.9,0.1],
                         'start':            cfg.startStimTime, 
                         'interval':         cfg.interStimInterval, 
                         'noise':            1, 
                         'number':           cfg.numStims, 
                         'weight':           cfg.netWeight, 
                         'delay':            0}
+
+#------------------------------------------------------------------------------
+# ManySecs_NetStim inputs - Modified to provide inputs to a list of sections within the same cell
+# Pass a list of sections to 'secList' instead of a single section to 'sec'
+#------------------------------------------------------------------------------
+
+cfg.addManySecs_NetStim=True
+if cfg.addManySecs_NetStim:
+    
+    cfg.synMech = ['AMPA']
+    cfg.synMechWF = [1]
+    # cfg.synMech = ['GABAA']
+    # cfg.synMechWF = [1]
+    # cfg.synMech = ['AMPA','GABAA']
+    # cfg.synMechWF = [0.5,0.5]
+    
+    cfg.startStimTime = 250
+    cfg.interStimInterval=1000/50
+    
+    cfg.numStims    = 200
+    cfg.netWeight   = 0.01
+
+    cfg.ManySecs_NetStim0   = { 'pop':              'CoCell_pop', 
+                                'ynorm':            [0,1], 
+                                # 'sec':              'soma', 
+                                'secList':          cfg.spineList, 
+                                'loc':              0.5, 
+                                'synMech':          cfg.synMech, 
+                                'synMechWeightFactor': cfg.synMechWF, 
+                                # 'synMech':          ['GABAA'], 
+                                # 'synMechWeightFactor': [1],
+                                # 'synMech':          ['AMPA','GABAA'], 
+                                # 'synMechWeightFactor': [0.5,0.5],
+                                'start':            cfg.startStimTime, 
+                                'interval':         cfg.interStimInterval, 
+                                'noise':            1, 
+                                'number':           cfg.numStims, 
+                                'weight':           cfg.netWeight, 
+                                'delay':            0}
 '''
 #------------------------------------------------------------------------------
 # Targeted NetStim inputs 
