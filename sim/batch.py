@@ -5,29 +5,47 @@ import numpy as np
 def changeWeight():
     # params
     params = specs.ODict()
-    params['synMech'] = [   ['AMPA'],
-                            ['GABAA'],
-                            ['AMPA','GABAA'],   
-                            ['AMPA','GABAA'],
-                            ['AMPA','GABAA'],
-                            ]
-    params['synMechWF'] = [ [1],
-                            [1],
-                            [0.5,0.5],
-                            [0.25,0.75],
-                            [0.75,0.25],
-                            ]
+    # params['synMech'] = [   ['AMPA'],
+    #                         ['GABAA'],
+    #                         ['AMPA','GABAA'],   
+    #                         ['AMPA','GABAA'],
+    #                         ['AMPA','GABAA'],
+    #                         ]
+    # params['synMechWF'] = [ [1],
+    #                         [1],
+    #                         [0.5,0.5],
+    #                         [0.25,0.75],
+    #                         [0.75,0.25],
+    #                         ]
+    
+    params[('ManySecs_NetStim0','synMech')] = [             ['AMPA'],
+                                                            ['GABAA'],
+                                                            ['AMPA','GABAA'],   
+                                                            ['AMPA','GABAA'],
+                                                            ['AMPA','GABAA'],]
+    params[('ManySecs_NetStim0','synMechWeightFactor')] = [ [1],
+                                                            [1],
+                                                            [0.5,0.5],
+                                                            [0.25,0.75],
+                                                            [0.75,0.25],
+                                                            ]
+    
+    # params[('ManySecs_NetStim2','synMech')] = [['AMPA'],['GABAA']]
+    # params[('ManySecs_NetStim2','synMechWeightFactor')] = [ [1],
+    #                                                         [1]]
+    # params['netWeight'] = [0.01, 0.05, 0.1]
     
     initCfg = {}
 
     initCfg['addManySecs_NetStim']=True
     
-    initCfg[('savePlots')]=True # skips saving the figures for each simulation
-    initCfg[('saveJson')]=True # skips saving the figures for each simulation
-    # initCfg[('hParams', 'celsius')] = 37
+    initCfg[('savePlots')]=True     # FALSE: skips saving the figures for each simulation
+    initCfg[('saveJson')]=True      # FALSE: skips saving the data file for each simulation
     
     # groupedParams
-    groupedParams = ['synMech','synMechWF'] 
+    # groupedParams = ['synMech','synMechWF'] 
+    groupedParams = [   ('ManySecs_NetStim0','synMech'),('ManySecs_NetStim0','synMechWeightFactor')]
+                        # [('ManySecs_NetStim2','synMech'),('ManySecs_NetStim2','synMechWeightFactor')]] 
     
     # batch
     b = Batch(params=params, netParamsFile='netParams.py', cfgFile='cfg_file.py', initCfg=initCfg, groupedParams=groupedParams)
@@ -36,15 +54,10 @@ def changeWeight():
 # ----------------------------------------------------------------------------------------------
 # Run configurations
 # ----------------------------------------------------------------------------------------------
-def setRunCfg(b, type='mpi'):
-    if type=='mpi_jv':
-        b.runCfg = {'type': 'mpi_bulletin', 
-                    'script': init_script, 
-                    'skip': True} # skip sims that already exist
-    else:
-        b.runCfg = {'type': 'mpi', 
-                    'script': 'init.py', 
-                    'skip': True} # skip sims that already exist
+def setRunCfg(b):
+    b.runCfg = {'type': 'mpi_bulletin', 
+                        'script': 'init.py', 
+                        'skip': True} # skip sims that already exist
 
 # ----------------------------------------------------------------------------------------------
 # Main code
@@ -65,14 +78,11 @@ b = changeWeight();             simType = 'ManySecs_NetStim'
 b.dataFolder    = simDataFolder
 b.date          = simDate
 
-mpi_type = 'mpi_jv' 
-init_script 	= 'init.py'
-
 b.batchLabel    = simCode
 b.saveFolder    = b.dataFolder + '/' + simType+'_' +  b.batchLabel
 
 b.method        = 'grid'
-setRunCfg(b, mpi_type)
+setRunCfg(b)
 b.run() # run batch
 
 '''

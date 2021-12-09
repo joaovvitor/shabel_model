@@ -27,12 +27,18 @@ cfg.startStimTime = 0 # TEMPORARY - IMPROVE THIS CODE
 
 cfg.duration = 2*1e3			## Duration of the sim, in ms -- value from M1 cfg.py 
 cfg.dt = 0.025                  ## Internal Integration Time Step -- value from M1 cfg.py 
+
 cfg.verbose = True              ## Show detailed messages
 cfg.hParams = {'celsius': 34, 'v_init': -70}  
+
+# creates a NEURON object with all the matching  
 cfg.createNEURONObj = True
 cfg.createPyStruct = True  
+
+# prints the progress of the simulation with the defined interval
 cfg.printRunTime = 0.1
 
+# do not worry about these
 cfg.connRandomSecFromList = False  # set to false for reproducibility 
 cfg.cvode_active = False
 cfg.cvode_atol = 1e-6
@@ -201,6 +207,11 @@ cfg.spineList=[
                 'spine4_3'
             ]
 
+cfg.spineList2=[
+                'spine0_0', 
+                'spine0_1', 
+                ]
+
 #------------------------------------------------------------------------------
 # Synapses
 #------------------------------------------------------------------------------
@@ -210,7 +221,6 @@ cfg.spineList=[
 #------------------------------------------------------------------------------
 # Network 
 #------------------------------------------------------------------------------
-cfg.singleCellPops = 0 # Create pops with 1 single cell (to debug)
 cfg.singlePop = 0
 cfg.weightNorm = 1      # ADDED AS TRUE BECAUSE IN CFG.PY IT ALWAYS EXECUTES THIS LINE IN NETPARAMS.PY
 cfg.weightNormThreshold = 4.0  # weight normalization factor threshold
@@ -284,9 +294,12 @@ if cfg.addNetStim:
 
 cfg.addManySecs_NetStim=True
 if cfg.addManySecs_NetStim:
-    
-    cfg.synMech = ['AMPA']
-    cfg.synMechWF = [1]
+
+    cfg.synMech = None
+    cfg.synMechWF = None
+
+    # cfg.synMech = ['AMPA']
+    # cfg.synMechWF = [1]
     # cfg.synMech = ['GABAA']
     # cfg.synMechWF = [1]
     # cfg.synMech = ['AMPA','GABAA']
@@ -297,6 +310,9 @@ if cfg.addManySecs_NetStim:
     
     cfg.numStims    = 200
     cfg.netWeight   = 0.01
+
+    # for i in range(cfg.spineList):
+    #     cfg.ManySecs_NetStim[i] = {}
 
     cfg.ManySecs_NetStim0   = { 'pop':              'CoCell_pop', 
                                 'ynorm':            [0,1], 
@@ -315,6 +331,24 @@ if cfg.addManySecs_NetStim:
                                 'number':           cfg.numStims, 
                                 'weight':           cfg.netWeight, 
                                 'delay':            0}
+
+    # cfg.ManySecs_NetStim2   = { 'pop':              'CoCell_pop', 
+    #                             'ynorm':            [0,1], 
+    #                             # 'sec':              'soma', 
+    #                             'secList':          cfg.spineList2, 
+    #                             'loc':              0.5, 
+    #                             'synMech':          cfg.synMech, 
+    #                             'synMechWeightFactor': cfg.synMechWF, 
+    #                             # 'synMech':          ['GABAA'], 
+    #                             # 'synMechWeightFactor': [1],
+    #                             # 'synMech':          ['AMPA','GABAA'], 
+    #                             # 'synMechWeightFactor': [0.5,0.5],
+    #                             'start':            cfg.startStimTime, 
+    #                             'interval':         cfg.interStimInterval, 
+    #                             'noise':            1, 
+    #                             'number':           cfg.numStims, 
+    #                             'weight':           cfg.netWeight, 
+    #                             'delay':            0}
 '''
 #------------------------------------------------------------------------------
 # Targeted NetStim inputs 
@@ -367,4 +401,17 @@ if cfg.addGroupNetStim:
                             'number':       1, 
                             'weight':       cfg.groupWeight , 
                             'delay':        0}
+'''
+
+'''
+LOOK AT M1 FOR EXAMPLE OF CODE
+popParams of netstims
+
+connParams with synsperconn=numspines and sec=spine list 
+
+can also be individual GABA and AMPA instead of together
+
+FOLLOW NEURON INSTALLATION FOR WINDOWS
+THEN TRY TO INSTALL NETPYNE AFTER NEURON IS SETUP (MUCH EASIER)
+
 '''
