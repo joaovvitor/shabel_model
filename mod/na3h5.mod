@@ -32,7 +32,8 @@ NEURON {
 }
 
 PARAMETER {
-    gmax = %Max Conductance Density% (pS/um2) 
+    gmax = 1 (pS/um2) : %Max Conductance Density% (pS/um2) 
+    : gmax = %Max Conductance Density% (pS/um2) 
     
     vshift = 0.0 (mV) : voltage shift (affects all)
     

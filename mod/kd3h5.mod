@@ -30,7 +30,8 @@ UNITS {
 }
 
 PARAMETER {
-    gmax = %Max Conductance Density% (pS/um2)
+    gmax = 1 (pS/um2) : %Max Conductance Density% (pS/um2)
+    : gmax = %Max Conductance Density% (pS/um2)
     v (mV)
     
     tha = 20.0 (mV) : v 1/2 for inf
